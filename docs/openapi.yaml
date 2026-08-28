@@ -1,0 +1,310 @@
+openapi: 3.1.0
+info:
+  title: Frontend Assignment API
+  version: 1.0.0
+  description: API contract derived from requirement.md
+servers:
+  - url: /
+paths:
+  /api/sign-in:
+    post:
+      summary: Sign in
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+      responses:
+        '200':
+          description: Sign-in success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          description: Sign-in failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/refresh:
+    post:
+      summary: Refresh access token
+      operationId: refreshToken
+      security:
+        - refreshTokenCookie: []
+      responses:
+        '200':
+          description: Refresh success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '401':
+          description: Unauthorized (invalid or expired refresh token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Refresh failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/user:
+    get:
+      summary: Get user profile
+      operationId: getUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/dashboard:
+    get:
+      summary: Get dashboard metrics
+      operationId: getDashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/task:
+    get:
+      summary: Get task list
+      operationId: getTasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Task page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/task/{id}:
+    get:
+      summary: Get task detail
+      operationId: getTaskDetail
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskIdPath'
+      responses:
+        '200':
+          description: Task detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDetailResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete task
+      operationId: deleteTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskIdPath'
+      responses:
+        '200':
+          description: Task deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteTaskResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    refreshTokenCookie:
+      type: apiKey
+      in: cookie
+      name: token
+      description: Refresh token cookie. In browser clients, send requests with credentials.
+  parameters:
+    TaskIdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    SignInRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 24
+          pattern: '^[A-Za-z0-9]+$'
+    AuthTokenResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+          description: JWT token. Decoded payload contains id and exp.
+        refreshToken:
+          type: string
+          description: JWT token. Decoded payload contains id and exp.
+    UserResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - memo
+      properties:
+        name:
+          type: string
+        memo:
+          type: string
+    DashboardResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - numOfTask
+        - numOfRestTask
+        - numOfDoneTask
+      properties:
+        numOfTask:
+          type: integer
+        numOfRestTask:
+          type: integer
+        numOfDoneTask:
+          type: integer
+    TaskItem:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - title
+        - memo
+        - status
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        memo:
+          type: string
+        status:
+          type: string
+          enum:
+            - TODO
+            - DONE
+    TaskListResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - data
+        - hasNext
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskItem'
+        hasNext:
+          type: boolean
+    TaskDetailResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - memo
+        - registerDatetime
+      properties:
+        title:
+          type: string
+        memo:
+          type: string
+        registerDatetime:
+          type: string
+          format: date-time
+    DeleteTaskResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          const: true
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - errorMessage
+      properties:
+        errorMessage:
+          type: string

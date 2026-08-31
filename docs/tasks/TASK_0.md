@@ -41,16 +41,42 @@
   의존성 검증 단계에서 같은 이유로 exit 1.
 - **원인**: pnpm 11은 의존성의 빌드 스크립트를 기본 차단하고, 허용/불허를
   명시하기 전까지 오류로 취급한다.
-- **해결**: msw의 postinstall은 후원 안내 출력뿐으로 동작에 불필요 →
-  `pnpm-workspace.yaml`에 `allowBuilds: { msw: false }`로 "의도적으로 실행하지
-  않음"을 명시해 오류 해제.
+- **해결**: `pnpm-workspace.yaml`에 `allowBuilds: { msw: false }`로 "의도적으로
+  실행하지 않음"을 명시해 오류 해제. (worker 파일이 저장소에 커밋되어 있어
+  postinstall의 자동 동기화 없이도 동작에 문제 없음 — 이슈 B 참고)
+- **추가 조사** (버전 정책 관련):
+  - 버그가 아니라 공급망 공격 대응으로 **pnpm 10부터 도입된 의도적 기본값**
+    (의존성 빌드 스크립트 기본 차단). 11은 미결정 패키지를 경고가 아닌 오류로
+    격상했고, `allowBuilds` 명시가 공식 해법.
+  - pnpm에는 LTS 채널이 없음 — 레지스트리 dist-tags 기준 `latest = 11.x`이며
+    `lts` 태그 부재. 11 사용이 표준.
+  - 9로 다운그레이드하면 오류는 사라지지만 보안 기본값을 포기하는 교환이라
+    채택하지 않음.
+  - msw postinstall의 실제 역할(정정): 후원 안내가 아니라 **`msw.workerDirectory`에
+    worker 파일을 자동 동기화**하는 스크립트. 차단해도 최초 생성된 worker가
+    커밋되어 있으면 무해하며, 대신 msw **업그레이드 시 자동 동기화가 없으므로**
+    `pnpm exec msw init`을 수동 재실행해야 한다(아래 이슈 B).
+  - 의존성 트리 전수 스캔 결과 install 계열 스크립트 보유 패키지는 **msw
+    하나뿐** — 다른 라이브러리 영향 없음. 향후 네이티브 빌드 패키지(sharp 등)
+    추가 시에만 `allowBuilds: true` 등록 필요.
 
 ### 이슈 B (작업 8) — `msw init public --save` 실패
 
 - **증상**: `--save`가 내부적으로 `pnpm install`을 재실행하다 이슈 A와 동일하게
   실패, worker 파일이 생성되지 않음.
-- **해결**: worker 파일을 `node_modules/msw/lib/mockServiceWorker.js`에서 직접
-  복사하고, `package.json`의 `msw.workerDirectory`를 수동으로 기록.
+- **원인(정확화)**: allowBuilds가 **아직 설정되기 전** 시점이라 모든
+  `pnpm install`이 미결정-빌드 오류로 실패하던 상황. `--save`의 내부 install도
+  같은 이유로 실패한 것 — allowBuilds 적용이 안 되는 것이 아니라 적용 전이었다.
+  설정 후 재확인 결과 `pnpm exec msw init`은 정상 동작한다.
+- **해결**: worker 파일을 `node_modules/msw/lib/mockServiceWorker.js`에서
+  `public/`으로 복사하고(복사 방향: 패키지 → 저장소), `package.json`의
+  `msw.workerDirectory`를 수동 기록.
+- **다른 사용자 clone 시 영향 검증**: `public/mockServiceWorker.js`가 저장소에
+  커밋되어 있으므로 원격에서 내려받은 사용자도 추가 절차 없이 동작한다.
+  clean clone → `pnpm install` → `test`/`build` 전 과정 통과를 실제로 재현해
+  확인함. 유일한 유의점: postinstall 자동 동기화를 꺼둔 상태이므로 **msw
+  버전 업그레이드 시 `pnpm exec msw init`으로 worker 파일을 갱신 후 커밋**해야
+  한다(버전 불일치 시 msw가 런타임 경고를 출력).
 
 ### 이슈 C (작업 2) — `typecheck` 스크립트가 아무것도 검사하지 않음
 

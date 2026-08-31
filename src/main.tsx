@@ -17,8 +17,10 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient();
 
-/* 별도 서버가 없는 과제이므로 개발/프로덕션 빌드 모두 MSW로 API를 모킹한다 */
+/* 별도 서버가 없는 과제이므로 기본은 MSW mock 모드.
+ * VITE_API_BASE_URL이 설정되면 실백엔드 모드로 간주해 MSW를 켜지 않는다. */
 async function enableMocking() {
+  if (import.meta.env.VITE_API_BASE_URL) return;
   const { worker } = await import('@/mocks/browser');
   await worker.start({ onUnhandledRequest: 'bypass' });
 }

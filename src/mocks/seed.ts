@@ -33,6 +33,9 @@ function mulberry32(seed: number) {
 
 const TASK_COUNT = 500;
 
+/* 목록 페이지 크기 (SPEC 결정 5) */
+export const TASK_PAGE_SIZE = 20;
+
 const actions = ['정리하기', '검토하기', '작성하기', '예약하기', '문의하기', '준비하기'];
 const subjects = [
   '주간 운동 계획',

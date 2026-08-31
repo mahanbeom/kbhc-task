@@ -10,12 +10,15 @@ import { selectIsAuthenticated, useAuthStore } from '@/shared/auth/auth-store';
 
 /* GNB(상단): 로고 + 로그인/회원정보, LNB(좌측): 라우트 맵 — SPEC 결정 8 */
 export function AppLayout() {
+  /* h-screen 고정 + main 내부 스크롤: 목록의 가상 스크롤 컨테이너(h-full 기반)가
+   * 뷰포트에 묶인 확정 높이를 갖게 한다. min-h-screen이면 내용만큼 늘어나
+   * 가상화가 무력화된다(TASK_4 이슈 A). */
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col">
       <Gnb />
-      <div className="flex flex-1">
+      <div className="flex min-h-0 flex-1">
         <Lnb />
-        <main className="flex-1 p-6">
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>

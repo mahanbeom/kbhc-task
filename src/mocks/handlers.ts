@@ -1,7 +1,13 @@
 import { HttpResponse, http } from 'msw';
 
 import { createToken, isTokenValid } from './jwt';
-import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS, seedTasks, seedUser } from './seed';
+import {
+  ACCESS_TOKEN_TTL_SECONDS,
+  REFRESH_TOKEN_TTL_SECONDS,
+  TASK_PAGE_SIZE,
+  seedTasks,
+  seedUser,
+} from './seed';
 
 interface SignInBody {
   email: string;
@@ -74,6 +80,28 @@ export const handlers = [
     const unauthorized = verifyBearer(request);
     if (unauthorized) return unauthorized;
     return HttpResponse.json({ name: seedUser.name, memo: seedUser.memo });
+  }),
+
+  http.get('/api/task', ({ request }) => {
+    const unauthorized = verifyBearer(request);
+    if (unauthorized) return unauthorized;
+
+    /* openapi: page는 required, minimum 1 */
+    const raw = new URL(request.url).searchParams.get('page');
+    const page = Number(raw);
+    if (raw === null || !Number.isInteger(page) || page < 1) {
+      return HttpResponse.json(
+        { errorMessage: 'page 파라미터가 올바르지 않습니다.' },
+        { status: 400 },
+      );
+    }
+
+    const start = (page - 1) * TASK_PAGE_SIZE;
+    /* TaskItem은 additionalProperties: false — registerDatetime(상세 전용)을 제외 */
+    const data = seedTasks
+      .slice(start, start + TASK_PAGE_SIZE)
+      .map(({ id, title, memo, status }) => ({ id, title, memo, status }));
+    return HttpResponse.json({ data, hasNext: start + TASK_PAGE_SIZE < seedTasks.length });
   }),
 
   /* 저장해둔 숫자가 아니라 매 요청 시드 배열에서 집계 — 삭제(슬라이스 5) 후

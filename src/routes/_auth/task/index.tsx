@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/_auth/task/')({
-  component: () => <h1 className="text-xl font-bold">할 일</h1>,
-});
+import { TaskListPage } from '@/pages/task-list/TaskListPage';
+
+export const Route = createFileRoute('/_auth/task/')({ component: TaskListPage });

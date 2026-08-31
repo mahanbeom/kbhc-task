@@ -5,7 +5,7 @@ import { http } from '@/shared/api/http';
 import { useAuthStore } from '@/shared/auth/auth-store';
 
 import { createToken } from './jwt';
-import { seedTasks, seedUser } from './seed';
+import { TASK_PAGE_SIZE, seedTasks, seedUser } from './seed';
 
 interface DashboardResponse {
   numOfTask: number;
@@ -13,9 +13,18 @@ interface DashboardResponse {
   numOfDoneTask: number;
 }
 
+interface TaskListResponse {
+  data: { id: string; title: string; memo: string; status: 'TODO' | 'DONE' }[];
+  hasNext: boolean;
+}
+
+function signInToStore() {
+  useAuthStore.getState().setAccessToken(createToken(seedUser.id, 60));
+}
+
 describe('GET /api/dashboard', () => {
   it('시드 500건 이상을 기준으로 집계가 정확하다', async () => {
-    useAuthStore.getState().setAccessToken(createToken(seedUser.id, 60));
+    signInToStore();
 
     const data = await api<DashboardResponse>('/api/dashboard');
 
@@ -32,5 +41,52 @@ describe('GET /api/dashboard', () => {
 
   it('미인증 요청은 401을 받는다', async () => {
     await expect(http('/api/dashboard')).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+describe('GET /api/task', () => {
+  const lastPage = Math.ceil(seedTasks.length / TASK_PAGE_SIZE);
+
+  it('페이지당 20건과 hasNext를 반환하고, 항목은 TaskItem 형상만 담는다', async () => {
+    signInToStore();
+
+    const page1 = await api<TaskListResponse>('/api/task?page=1');
+
+    expect(TASK_PAGE_SIZE).toBe(20); /* SPEC 결정 5 */
+    expect(page1.data).toHaveLength(TASK_PAGE_SIZE);
+    expect(page1.hasNext).toBe(true);
+    expect(page1.data[0]?.id).toBe(seedTasks[0]?.id);
+    /* openapi TaskItem은 additionalProperties: false — registerDatetime은 상세 전용 */
+    expect(page1.data[0]).not.toHaveProperty('registerDatetime');
+  });
+
+  it('페이지가 겹치지 않고 이어진다', async () => {
+    signInToStore();
+
+    const page2 = await api<TaskListResponse>('/api/task?page=2');
+
+    expect(page2.data[0]?.id).toBe(seedTasks[TASK_PAGE_SIZE]?.id);
+  });
+
+  it('마지막 페이지는 hasNext=false, 범위 밖 페이지는 빈 배열이다', async () => {
+    signInToStore();
+
+    const last = await api<TaskListResponse>(`/api/task?page=${lastPage}`);
+    expect(last.data.length).toBeGreaterThan(0);
+    expect(last.hasNext).toBe(false);
+
+    const beyond = await api<TaskListResponse>(`/api/task?page=${lastPage + 1}`);
+    expect(beyond).toEqual({ data: [], hasNext: false });
+  });
+
+  it('page 파라미터가 없거나 1 미만이면 400이다', async () => {
+    signInToStore();
+
+    await expect(api('/api/task')).rejects.toMatchObject({ status: 400 });
+    await expect(api('/api/task?page=0')).rejects.toMatchObject({ status: 400 });
+  });
+
+  it('미인증 요청은 401을 받는다', async () => {
+    await expect(http('/api/task?page=1')).rejects.toMatchObject({ status: 401 });
   });
 });

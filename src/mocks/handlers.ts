@@ -1,7 +1,7 @@
 import { HttpResponse, http } from 'msw';
 
 import { createToken, isTokenValid } from './jwt';
-import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS, seedUser } from './seed';
+import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS, seedTasks, seedUser } from './seed';
 
 interface SignInBody {
   email: string;
@@ -74,5 +74,18 @@ export const handlers = [
     const unauthorized = verifyBearer(request);
     if (unauthorized) return unauthorized;
     return HttpResponse.json({ name: seedUser.name, memo: seedUser.memo });
+  }),
+
+  /* 저장해둔 숫자가 아니라 매 요청 시드 배열에서 집계 — 삭제(슬라이스 5) 후
+   * 대시보드 쿼리 invalidate 시 줄어든 값이 그대로 반영되게 한다 */
+  http.get('/api/dashboard', ({ request }) => {
+    const unauthorized = verifyBearer(request);
+    if (unauthorized) return unauthorized;
+    const numOfDoneTask = seedTasks.filter((task) => task.status === 'DONE').length;
+    return HttpResponse.json({
+      numOfTask: seedTasks.length,
+      numOfRestTask: seedTasks.length - numOfDoneTask,
+      numOfDoneTask,
+    });
   }),
 ];

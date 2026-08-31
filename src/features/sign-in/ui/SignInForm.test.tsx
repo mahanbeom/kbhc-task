@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
@@ -11,7 +12,13 @@ async function renderSignInPage() {
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/sign-in'] }),
   });
-  render(<RouterProvider router={router} />);
+  /* 로그인 성공 시 이동하는 대시보드가 useQuery를 쓰므로 Provider가 필요하다 */
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
   return {
     email: await screen.findByLabelText('이메일'),
     password: await screen.findByLabelText('비밀번호'),

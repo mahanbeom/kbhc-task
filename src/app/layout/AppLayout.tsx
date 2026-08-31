@@ -2,8 +2,11 @@ import {
   ArrowRightEndOnRectangleIcon,
   ClipboardDocumentListIcon,
   Squares2X2Icon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Link, Outlet } from '@tanstack/react-router';
+
+import { selectIsAuthenticated, useAuthStore } from '@/shared/auth/auth-store';
 
 /* GNB(상단): 로고 + 로그인/회원정보, LNB(좌측): 라우트 맵 — SPEC 결정 8 */
 export function AppLayout() {
@@ -21,15 +24,24 @@ export function AppLayout() {
 }
 
 function Gnb() {
+  /* 토큰 원문이 아닌 파생 boolean만 구독한다 — refresh로 토큰이 갱신될 때
+   * GNB가 리렌더되지 않게 하기 위함(SPEC 결정 2) */
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
+
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4">
       <Link to="/" className="text-lg font-bold">
         할 일 관리
       </Link>
-      {/* 로그인 상태 분기는 인증 슬라이스에서 추가한다 */}
-      <Link to="/sign-in" aria-label="로그인" className="rounded p-2 hover:bg-surface">
-        <ArrowRightEndOnRectangleIcon className="size-6" aria-hidden />
-      </Link>
+      {isAuthenticated ? (
+        <Link to="/user" aria-label="회원정보" className="rounded p-2 hover:bg-surface">
+          <UserCircleIcon className="size-6" aria-hidden />
+        </Link>
+      ) : (
+        <Link to="/sign-in" aria-label="로그인" className="rounded p-2 hover:bg-surface">
+          <ArrowRightEndOnRectangleIcon className="size-6" aria-hidden />
+        </Link>
+      )}
     </header>
   );
 }

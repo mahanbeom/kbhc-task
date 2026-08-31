@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -11,7 +11,12 @@ import { Modal } from '@/shared/ui/Modal';
 import { signIn } from '../api/sign-in';
 import { signInSchema, type SignInInput } from '../model/schema';
 
-export function SignInForm() {
+interface SignInFormProps {
+  /* 가드가 심어준 복귀 목적지(href). 없으면 대시보드로 이동한다(SPEC 결정 3) */
+  redirectTo?: string | undefined;
+}
+
+export function SignInForm({ redirectTo }: SignInFormProps) {
   const {
     register,
     handleSubmit,
@@ -22,12 +27,16 @@ export function SignInForm() {
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+  const router = useRouter();
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const onSubmit = async (input: SignInInput) => {
     try {
       setAccessToken(await signIn(input));
-      await navigate({ to: '/' });
+      /* redirectTo는 라우트 테이블 밖의 런타임 href라 타입 안전한 to로 표현할 수
+       * 없어 history로 이동한다(TanStack 인증 가이드의 복귀 패턴) */
+      if (redirectTo !== undefined) router.history.push(redirectTo);
+      else await navigate({ to: '/' });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : '로그인에 실패했습니다.');
     }

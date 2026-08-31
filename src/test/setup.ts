@@ -8,6 +8,9 @@ import { server } from './server';
 
 /* jsdom은 <dialog>의 showModal/close를 구현하지 않아 최소 동작만 polyfill한다.
  * 실제 브라우저 동작(포커스 트랩 포함)은 브라우저 구동 검증으로 확인한다. */
+/* jsdom은 scrollTo를 구현하지 않아 라우터 내비게이션마다 경고를 찍는다 — 무시 */
+window.scrollTo = () => undefined;
+
 if (!HTMLDialogElement.prototype.showModal) {
   HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
     this.open = true;

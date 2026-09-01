@@ -23,13 +23,16 @@ export function TaskDeleteButton({ taskId }: TaskDeleteButtonProps) {
   const { mutate, isPending, isError } = useMutation({
     mutationFn: () => deleteTask(taskId),
     onSuccess: async () => {
-      /* 목록으로 먼저 이동한 뒤 캐시를 정리한다 — 삭제된 상세 쿼리를
-       * invalidate로 refetch시키면 404가 나므로 remove로 버린다.
-       * 목록·대시보드는 invalidate로 감소분을 다시 읽는다(SPEC 완료 기준). */
-      await navigate({ to: '/task' });
-      queryClient.removeQueries({ queryKey: ['task', 'detail', taskId] });
+      /* 순서가 요청 횟수를 결정한다(SPEC 완료 기준: 목록 캐시 무효화).
+       * ① 이동 전에 목록·대시보드 invalidate — 상세 페이지에 있는 동안 두
+       *    쿼리는 비활성이라 refetch 없이 stale 마킹만 된다. 이동 후에
+       *    invalidate하면 마운트 refetch와 겹쳐 목록을 두 번 조회한다.
+       * ② 이동 후에 상세 캐시 remove — 상세 화면에 머문 채 건드리면
+       *    refetch가 삭제된 리소스에 404를 내므로 invalidate가 아닌 remove. */
       await queryClient.invalidateQueries({ queryKey: ['task', 'list'] });
       await queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      await navigate({ to: '/task' });
+      queryClient.removeQueries({ queryKey: ['task', 'detail', taskId] });
     },
   });
 

@@ -49,10 +49,14 @@
   queryClient에 접근하는 표준 방법이 컨텍스트다(TanStack Router+Query 공식
   통합 패턴). 부수 효과로 상세 페이지는 `useSuspenseQuery`로 pending/error
   분기가 사라짐.
-- **삭제 후 캐시 전략**: 이동 먼저 → 상세 캐시는 invalidate가 아닌
-  **remove** — invalidate는 refetch를 유발해 삭제된 리소스에 404를 내므로.
-  목록·대시보드는 invalidate로 감소분 재조회(SPEC 완료 기준의 "목록 캐시
-  무효화" 이행).
+- **삭제 후 캐시 전략**: ① 목록·대시보드 invalidate를 **이동 전에** —
+  상세 페이지에 있는 동안 두 쿼리는 비활성이라 stale 마킹만 되고, 이동 후
+  마운트 refetch 1회로 최신화된다(SPEC 완료 기준의 "목록 캐시 무효화"
+  이행). ② 상세 캐시는 **이동 후 remove** — invalidate는 refetch로 삭제된
+  리소스에 404를 내고, 상세 화면에 머문 채 remove하면 같은 문제가 생기므로.
+  ※ 최초 구현은 "이동 → invalidate" 순서라 마운트 refetch와 invalidate
+  refetch가 겹쳐 목록을 두 번 조회했음 — 사용자가 네트워크 검수에서 중복
+  호출을 발견해 순서 재배열로 1회로 축소(마감 라운드 반영).
 - **공용 테스트 렌더 헬퍼** (`src/test/render.tsx`): 라우터 컨텍스트 도입으로
   모든 테스트의 라우터 생성부가 바뀌어야 했음 — TASK_3 이슈 A에서 예고한
   Provider 조립 중복을 이번에 헬퍼 한 곳으로 통합(슬라이스 6 예정분 선반영).

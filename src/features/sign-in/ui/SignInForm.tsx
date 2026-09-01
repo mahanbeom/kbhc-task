@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { useAuthStore } from '@/shared/auth/auth-store';
 import { Button } from '@/shared/ui/Button';
@@ -20,15 +20,17 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isValid, isSubmitting },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
     mode: 'onChange',
   });
   /* 입력을 전부 지우면 에러 문구를 숨긴다(빈 값 자체는 지적 대상이 아님 —
-   * 미충족 상태는 제출 비활성이 이미 표현). 다시 틀리게 입력하면 재표시. */
-  const [emailValue, passwordValue] = watch(['email', 'password']);
+   * 미충족 상태는 제출 비활성이 이미 표현). 다시 틀리게 입력하면 재표시.
+   * watch() 대신 useWatch — watch는 React Compiler가 메모이즈할 수 없어
+   * 컴파일이 통째로 스킵된다(react-hooks/incompatible-library). */
+  const [emailValue, passwordValue] = useWatch({ control, name: ['email', 'password'] });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const router = useRouter();

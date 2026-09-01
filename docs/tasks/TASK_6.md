@@ -73,9 +73,12 @@ Critical 0 / Major 2 / Minor 7 — 전건 반영:
   스캔 결과(fetchQuery/prefetchQuery, useBlocker, ScrollRestoration,
   waitUntilReady, RHF 별칭, zod `.email()`)는 전부 미사용 확인.
 - **로그인 폼 에러 문구 동작** — 입력을 전부 지우면 에러 문구를 숨기고
-  다시 틀리면 재표시(`watch` 기반 표시 조건, 검증·제출 비활성 로직 불변).
+  다시 틀리면 재표시(표시 조건만 추가, 검증·제출 비활성 로직 불변).
   동작 테스트 1건 추가. 로그인 버튼명도 requirement 표기대로 "제출"로
-  변경(사용자 직접 수정)에 맞춰 테스트 갱신.
+  변경(사용자 직접 수정)에 맞춰 테스트 갱신. 구독은 `watch()`가 아닌
+  `useWatch` 훅 사용 — watch는 React Compiler가 메모이즈할 수 없어
+  컴포넌트 컴파일이 스킵된다는 lint 경고를 사용자가 clean clone 검증에서
+  발견해 교체(잔여 경고는 문서화된 useVirtualizer 1건뿐).
 - **버튼 커서** — Tailwind v4 preflight가 버튼 기본 커서를 pointer→default로
   바꿔 클릭 가능성이 안 보이던 것을 공용 Button에 `cursor-pointer` 추가로
   일괄 해결(비활성 not-allowed 유지).

@@ -8,7 +8,8 @@ KB헬스케어 프론트엔드 과제 — 인증이 필요한 할 일 관리 SPA
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:5173
+pnpm dev                     # http://localhost:5173
+pnpm build && pnpm preview   # 프로덕션 번들로 확인 (http://localhost:4173)
 ```
 
 로그인 계정(mock 시드): `user@kbhc.co.kr` / `password1234`
@@ -19,7 +20,7 @@ pnpm dev        # http://localhost:5173
 원 요청 재시도` 흐름을 직접 볼 수 있습니다.
 
 ```bash
-pnpm test        # vitest (36건)
+pnpm test        # vitest (38건)
 pnpm typecheck   # tsc -b
 pnpm lint        # eslint
 pnpm build       # tsc -b && vite build
@@ -30,16 +31,16 @@ pnpm build       # tsc -b && vite build
 
 ## 기술 스택
 
-| 선택                                 | 근거 요약                                                       |
-| ------------------------------------ | --------------------------------------------------------------- |
+| 선택                         | 근거 요약                                                       |
+| ---------------------------- | --------------------------------------------------------------- |
 | Vite + React 19 + TypeScript | CSR SPA — 전 화면이 인증 뒤라 SEO·서버 렌더 이점이 없음         |
-| TanStack Router                      | 타입 안전 라우팅, `beforeLoad` 인증 가드, `notFound()` 404 처리 |
-| TanStack Query                       | 서버 상태 전담, `useInfiniteQuery` 무한 스크롤                  |
-| @tanstack/react-virtual              | 가상 스크롤. Router/Query와 동일 생태계                         |
-| react-hook-form + zod                | 로그인 폼 유효성, openapi 규칙을 zod 스키마로 이관              |
-| zustand                              | 인증 상태 하나만 전역 관리(그 외 전역 스토어 없음)              |
-| MSW                                  | Authorization/쿠키 검증·만료 토큰 발급까지 재현하는 모킹        |
-| Tailwind CSS v4                      | `@theme` CSS 변수로 색상 토큰 관리                              |
+| TanStack Router              | 타입 안전 라우팅, `beforeLoad` 인증 가드, `notFound()` 404 처리 |
+| TanStack Query               | 서버 상태 전담, `useInfiniteQuery` 무한 스크롤                  |
+| @tanstack/react-virtual      | 가상 스크롤. Router/Query와 동일 생태계                         |
+| react-hook-form + zod        | 로그인 폼 유효성, openapi 규칙을 zod 스키마로 이관              |
+| zustand                      | 인증 상태 하나만 전역 관리(그 외 전역 스토어 없음)              |
+| MSW                          | Authorization/쿠키 검증·만료 토큰 발급까지 재현하는 모킹        |
+| Tailwind CSS v4              | `@theme` CSS 변수로 색상 토큰 관리                              |
 
 ## 디렉터리 구조 (경량 FSD)
 

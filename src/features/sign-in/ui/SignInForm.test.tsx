@@ -10,7 +10,7 @@ async function renderSignInPage() {
   return {
     email: await screen.findByLabelText('이메일'),
     password: await screen.findByLabelText('비밀번호'),
-    submit: await screen.findByRole('button', { name: '로그인' }),
+    submit: await screen.findByRole('button', { name: '제출' }),
   };
 }
 
@@ -24,6 +24,22 @@ describe('SignInForm', () => {
     await user.type(email, 'not-an-email');
     await user.type(password, 'password1234');
     expect(submit).toBeDisabled();
+    expect(screen.getByText('이메일 형식이 올바르지 않습니다.')).toBeInTheDocument();
+  });
+
+  it('입력을 전부 지우면 에러 문구가 사라지고, 다시 틀리면 재표시된다', async () => {
+    const user = userEvent.setup();
+    const { email, submit } = await renderSignInPage();
+
+    await user.type(email, 'not-an-email');
+    expect(screen.getByText('이메일 형식이 올바르지 않습니다.')).toBeInTheDocument();
+
+    await user.clear(email);
+    expect(screen.queryByText('이메일 형식이 올바르지 않습니다.')).not.toBeInTheDocument();
+    /* 빈 값이어도 미충족 상태이므로 제출은 여전히 비활성 */
+    expect(submit).toBeDisabled();
+
+    await user.type(email, 'still-wrong');
     expect(screen.getByText('이메일 형식이 올바르지 않습니다.')).toBeInTheDocument();
   });
 

@@ -20,11 +20,15 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
     mode: 'onChange',
   });
+  /* 입력을 전부 지우면 에러 문구를 숨긴다(빈 값 자체는 지적 대상이 아님 —
+   * 미충족 상태는 제출 비활성이 이미 표현). 다시 틀리게 입력하면 재표시. */
+  const [emailValue, passwordValue] = watch(['email', 'password']);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const router = useRouter();
@@ -49,18 +53,18 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
           label="이메일"
           type="email"
           autoComplete="email"
-          error={errors.email?.message}
+          error={emailValue ? errors.email?.message : undefined}
           {...register('email')}
         />
         <Input
           label="비밀번호"
           type="password"
           autoComplete="current-password"
-          error={errors.password?.message}
+          error={passwordValue ? errors.password?.message : undefined}
           {...register('password')}
         />
         <Button type="submit" disabled={!isValid || isSubmitting}>
-          로그인
+          제출
         </Button>
       </form>
 

@@ -15,6 +15,7 @@
   --color-border: #e5e5e5;
   --color-surface: #f7f7f7;
   --color-background: #ffffff;
+  --color-overlay: rgb(0 0 0 / 50%);
 }
 
 body {

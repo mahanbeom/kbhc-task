@@ -17,3 +17,7 @@ export interface TaskDetailResponse {
   memo: string;
   registerDatetime: string;
 }
+
+export interface DeleteTaskResponse {
+  success: true;
+}

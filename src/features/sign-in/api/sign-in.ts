@@ -1,11 +1,7 @@
+import type { AuthTokenResponse } from '@/shared/api/client';
 import { http } from '@/shared/api/http';
 
 import type { SignInInput } from '../model/schema';
-
-interface AuthTokenResponse {
-  accessToken: string;
-  refreshToken: string;
-}
 
 export async function signIn(input: SignInInput): Promise<string> {
   const data = await http<AuthTokenResponse>('/api/sign-in', {

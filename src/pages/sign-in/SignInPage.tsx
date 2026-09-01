@@ -1,6 +1,6 @@
 import { useSearch } from '@tanstack/react-router';
 
-import { SignInForm } from '@/features/sign-in/ui/SignInForm';
+import { SignInForm } from '@/features/sign-in';
 
 export function SignInPage() {
   const { redirect } = useSearch({ from: '/sign-in' });

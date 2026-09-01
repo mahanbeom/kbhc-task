@@ -1,14 +1,10 @@
 import { CheckCircleIcon, ClockIcon, RectangleStackIcon } from '@heroicons/react/24/outline';
 import { useQuery } from '@tanstack/react-query';
 
+import type { DashboardResponse } from '@/entities/dashboard';
 import { api } from '@/shared/api/client';
 
 /* 대시보드에서만 쓰는 쿼리라 entity로 승격하지 않고 페이지가 소유한다(SPEC 규칙) */
-interface DashboardResponse {
-  numOfTask: number;
-  numOfRestTask: number;
-  numOfDoneTask: number;
-}
 
 /* requirement "대시보드 (/)" 표의 세 지표. 항목별 아이콘 구분 요구 충족 */
 const metrics = [

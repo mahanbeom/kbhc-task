@@ -67,7 +67,9 @@ function Lnb() {
               activeOptions={{ exact: to === '/' }}
             >
               <Icon className="size-6 shrink-0" aria-hidden />
-              <span className="hidden sm:inline">{label}</span>
+              {/* 좁은 화면에서는 시각적으로만 숨긴다 — display:none(hidden)은
+               * 접근성 트리에서도 빠져 링크가 이름을 잃는다(WCAG 4.1.2) */}
+              <span className="sr-only sm:not-sr-only">{label}</span>
             </Link>
           </li>
         ))}

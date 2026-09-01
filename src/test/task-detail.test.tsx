@@ -53,7 +53,7 @@ describe('할 일 상세와 삭제', () => {
 
     await user.click(screen.getByRole('button', { name: '삭제' }));
     const dialog = await screen.findByRole('dialog');
-    const submit = within(dialog).getByRole('button', { name: '삭제' });
+    const submit = within(dialog).getByRole('button', { name: '제출' });
     const input = within(dialog).getByLabelText('할 일 ID');
 
     expect(submit).toBeDisabled();
@@ -78,7 +78,7 @@ describe('할 일 상세와 삭제', () => {
     await user.click(screen.getByRole('button', { name: '삭제' }));
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('할 일 ID'), target.id);
-    await user.click(within(dialog).getByRole('button', { name: '삭제' }));
+    await user.click(within(dialog).getByRole('button', { name: '제출' }));
 
     expect(await screen.findByRole('heading', { name: '할 일' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/task');

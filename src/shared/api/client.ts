@@ -5,7 +5,8 @@ import { useAuthStore } from '@/shared/auth/auth-store';
 
 import { ApiError, http } from './http';
 
-interface AuthTokenResponse {
+/* openapi.yaml AuthTokenResponse — sign-in/refresh 공통 계약 */
+export interface AuthTokenResponse {
   accessToken: string;
   refreshToken: string;
 }

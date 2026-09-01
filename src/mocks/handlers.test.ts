@@ -1,22 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
+import type { DashboardResponse } from '@/entities/dashboard';
+import type { TaskListResponse } from '@/entities/task';
 import { api } from '@/shared/api/client';
 import { http } from '@/shared/api/http';
 import { useAuthStore } from '@/shared/auth/auth-store';
 
 import { createToken } from './jwt';
 import { TASK_PAGE_SIZE, seedTasks, seedUser } from './seed';
-
-interface DashboardResponse {
-  numOfTask: number;
-  numOfRestTask: number;
-  numOfDoneTask: number;
-}
-
-interface TaskListResponse {
-  data: { id: string; title: string; memo: string; status: 'TODO' | 'DONE' }[];
-  hasNext: boolean;
-}
 
 function signInToStore() {
   useAuthStore.getState().setAccessToken(createToken(seedUser.id, 60));
@@ -41,6 +32,16 @@ describe('GET /api/dashboard', () => {
 
   it('미인증 요청은 401을 받는다', async () => {
     await expect(http('/api/dashboard')).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+describe('POST /api/refresh', () => {
+  it('쿠키가 없으면 400, 쿠키가 무효하면 401이다 (openapi 실패 코드 구분)', async () => {
+    await expect(http('/api/refresh', { method: 'POST' })).rejects.toMatchObject({ status: 400 });
+
+    document.cookie = 'token=invalid-token; Path=/';
+    await expect(http('/api/refresh', { method: 'POST' })).rejects.toMatchObject({ status: 401 });
+    document.cookie = 'token=; Path=/; Max-Age=0';
   });
 });
 

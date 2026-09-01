@@ -3,6 +3,11 @@
  * mock(MSW)과 실백엔드 전환은 VITE_API_BASE_URL 하나로 결정되며(SPEC 참고),
  * 인증(Bearer/refresh)은 이 위에 얹는 별도 계층이 담당한다. */
 
+/* openapi.yaml ErrorResponse — 모든 비-2xx 응답의 공통 계약 */
+export interface ErrorResponse {
+  errorMessage: string;
+}
+
 export class ApiError extends Error {
   readonly status: number;
 
@@ -27,7 +32,7 @@ export async function parseJson<T>(response: Response): Promise<T> {
 
   let message = '요청에 실패했습니다.';
   try {
-    message = ((await response.json()) as { errorMessage: string }).errorMessage;
+    message = ((await response.json()) as ErrorResponse).errorMessage;
   } catch {
     /* body가 JSON이 아니면 기본 메시지 유지 */
   }

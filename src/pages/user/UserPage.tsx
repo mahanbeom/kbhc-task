@@ -1,15 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 
+import type { UserResponse } from '@/entities/user';
 import { api } from '@/shared/api/client';
 import { useAuthStore } from '@/shared/auth/auth-store';
 import { Button } from '@/shared/ui/Button';
 
 /* /user에서만 쓰는 쿼리라 entity로 승격하지 않고 페이지가 소유한다(SPEC 규칙) */
-interface UserResponse {
-  name: string;
-  memo: string;
-}
 
 export function UserPage() {
   const navigate = useNavigate();

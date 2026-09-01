@@ -63,12 +63,13 @@ export function TaskDeleteButton({ taskId }: TaskDeleteButtonProps) {
           )}
           <div className="flex justify-end gap-2">
             <Button onClick={close}>취소</Button>
+            {/* requirement.md가 확인 모달의 버튼 문구를 `제출`로 명시 */}
             <Button
               variant="danger"
               disabled={confirmInput !== taskId || isPending}
               onClick={() => mutate()}
             >
-              삭제
+              제출
             </Button>
           </div>
         </div>

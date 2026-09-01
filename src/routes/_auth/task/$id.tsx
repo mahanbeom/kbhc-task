@@ -7,12 +7,16 @@ import { TaskDetailPage } from '@/pages/task-detail/TaskDetailPage';
 
 export const Route = createFileRoute('/_auth/task/$id')({
   /* loader에서 선조회해 404를 라우터 notFound로 변환한다 — 컴포넌트는
-   * 데이터가 보장된 상태(useSuspenseQuery)로 단순해진다 */
+   * 데이터가 보장된 상태(useSuspenseQuery)로 단순해진다.
+   * staleTime: 'static' = 캐시에 있으면 fetch 없이 반환(구 ensureQueryData —
+   * v5.102에서 deprecated되어 통합 API인 query()로 대체) */
   loader: ({ context: { queryClient }, params }) =>
-    queryClient.ensureQueryData(taskDetailQuery(params.id)).catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 404) throw notFound();
-      throw error;
-    }),
+    queryClient
+      .query({ ...taskDetailQuery(params.id), staleTime: 'static' })
+      .catch((error: unknown) => {
+        if (error instanceof ApiError && error.status === 404) throw notFound();
+        throw error;
+      }),
   component: TaskDetailPage,
   notFoundComponent: TaskNotFound,
 });

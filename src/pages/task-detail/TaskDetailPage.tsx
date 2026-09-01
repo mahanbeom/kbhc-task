@@ -2,7 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { getRouteApi } from '@tanstack/react-router';
 
 import { taskDetailQuery } from '@/entities/task';
-import { TaskDeleteButton } from '@/features/task-delete/TaskDeleteButton';
+import { TaskDeleteButton } from '@/features/task-delete';
 
 const route = getRouteApi('/_auth/task/$id');
 

@@ -18,7 +18,7 @@ export function createAppRouter(queryClient: QueryClient, history?: RouterHistor
     ...(history !== undefined && { history }),
   });
 
-  useAuthStore.subscribe((state, prev) => {
+  const dispose = useAuthStore.subscribe((state, prev) => {
     if (prev.accessToken === null || state.accessToken !== null) return;
     const { href, pathname } = router.state.location;
     if (pathname === '/sign-in') return;
@@ -26,5 +26,8 @@ export function createAppRouter(queryClient: QueryClient, history?: RouterHistor
     void router.navigate({ to: '/sign-in', search: { redirect: href } });
   });
 
-  return router;
+  /* dispose: 전역 스토어 구독 해제. 앱에서는 라우터가 앱과 수명을 같이해
+   * 쓸 일이 없지만, 테스트는 renderApp마다 라우터를 만들므로 해제하지 않으면
+   * 언마운트된 라우터들이 스토어 전이마다 navigate를 수행한다 */
+  return { router, dispose };
 }

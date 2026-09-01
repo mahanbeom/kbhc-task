@@ -31,10 +31,12 @@ export function TaskListPage() {
   const lastVirtualIndex = virtualItems.at(-1)?.index;
   useEffect(() => {
     if (lastVirtualIndex === undefined) return;
-    if (lastVirtualIndex >= tasks.length - 1 && hasNextPage && !isFetchingNextPage) {
+    /* isError 게이트: 다음 페이지 fetch가 최종 실패한 뒤에도 로더 row가 보이는
+     * 동안 재발화하면 실패→재요청 무한 루프가 된다(5xx·네트워크 오류) */
+    if (lastVirtualIndex >= tasks.length - 1 && hasNextPage && !isFetchingNextPage && !isError) {
       void fetchNextPage({ cancelRefetch: false });
     }
-  }, [lastVirtualIndex, tasks.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [lastVirtualIndex, tasks.length, hasNextPage, isFetchingNextPage, isError, fetchNextPage]);
 
   return (
     <div className="flex h-full flex-col gap-4">

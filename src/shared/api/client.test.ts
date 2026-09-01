@@ -6,13 +6,10 @@ import { seedUser } from '@/mocks/seed';
 import { useAuthStore } from '@/shared/auth/auth-store';
 import { server } from '@/test/server';
 
+import type { UserResponse } from '@/entities/user';
+
 import { api } from './client';
 import { http } from './http';
-
-interface UserResponse {
-  name: string;
-  memo: string;
-}
 
 /* 실제 sign-in 핸들러를 거쳐 refresh 쿠키를 심는다 — 핸들러의 쿠키 검증까지
  * 함께 통합 검증하기 위해 쿠키를 직접 조작하지 않는다 */

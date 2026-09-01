@@ -52,7 +52,7 @@ describe('인증 가드와 회원정보', () => {
 
     await user.type(await screen.findByLabelText('이메일'), seedUser.email);
     await user.type(screen.getByLabelText('비밀번호'), seedUser.password);
-    await user.click(screen.getByRole('button', { name: '로그인' }));
+    await user.click(screen.getByRole('button', { name: '제출' }));
 
     expect(await screen.findByRole('heading', { name: '회원정보' })).toBeInTheDocument();
     expect(await screen.findByText(seedUser.name)).toBeInTheDocument();
@@ -77,7 +77,8 @@ describe('인증 가드와 회원정보', () => {
 
     expect(await screen.findByRole('heading', { name: '로그인' })).toBeInTheDocument();
     expect(useAuthStore.getState().accessToken).toBeNull();
-    /* mock sign-out이 쿠키를 만료시켰으므로 세션 복원(refresh)이 더는 안 된다 */
-    await expect(refreshAccessToken()).rejects.toMatchObject({ status: 401 });
+    /* mock sign-out이 쿠키를 삭제했으므로 세션 복원(refresh)이 더는 안 된다 —
+     * 쿠키 부재는 openapi 실패 코드 구분상 400(Refresh failed) */
+    await expect(refreshAccessToken()).rejects.toMatchObject({ status: 400 });
   });
 });

@@ -4,7 +4,7 @@ export const seedUser = {
   id: 'user-1',
   email: 'user@kbhc.co.kr',
   password: 'password1234',
-  name: '김국민',
+  name: '마한범',
   memo: 'KB헬스케어 프론트엔드 과제 계정입니다.',
 };
 

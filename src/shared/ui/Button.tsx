@@ -18,7 +18,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`rounded px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:bg-disabled disabled:text-background ${variantClass[variant]} ${className}`}
+      className={`cursor-pointer rounded px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:bg-disabled disabled:text-background ${variantClass[variant]} ${className}`}
       {...props}
     />
   );

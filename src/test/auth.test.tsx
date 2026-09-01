@@ -1,33 +1,19 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { HttpResponse, http as mswHttp } from 'msw';
 import { describe, expect, it } from 'vitest';
 
-import { createAppRouter } from '@/app/router';
 import { createToken } from '@/mocks/jwt';
 import { seedUser } from '@/mocks/seed';
 import { refreshAccessToken } from '@/shared/api/client';
 import { http } from '@/shared/api/http';
 import { useAuthStore } from '@/shared/auth/auth-store';
+import { renderApp } from '@/test/render';
 import { server } from '@/test/server';
-
-function renderApp(initialPath: string) {
-  /* main.tsx와 동일한 팩토리 사용 — 세션 소실 구독까지 실제 구성으로 검증 */
-  const router = createAppRouter(createMemoryHistory({ initialEntries: [initialPath] }));
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  );
-  return router;
-}
 
 describe('인증 가드와 회원정보', () => {
   it('미인증 상태로 보호 라우트 접근 시 /sign-in으로 redirect된다', async () => {
-    const router = renderApp('/user');
+    const { router } = renderApp('/user');
 
     expect(await screen.findByRole('heading', { name: '로그인' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/sign-in');
@@ -36,7 +22,7 @@ describe('인증 가드와 회원정보', () => {
   });
 
   it('외부 URL redirect 파라미터는 버린다(내부 경로만 허용)', async () => {
-    const router = renderApp('/sign-in?redirect=https://evil.example');
+    const { router } = renderApp('/sign-in?redirect=https://evil.example');
 
     expect(await screen.findByRole('heading', { name: '로그인' })).toBeInTheDocument();
     /* location.search는 raw 값이고, validateSearch 결과는 라우트 match에 반영된다 */
@@ -53,7 +39,7 @@ describe('인증 가드와 회원정보', () => {
         HttpResponse.json({ errorMessage: '세션이 만료되었습니다.' }, { status: 401 }),
       ),
     );
-    const router = renderApp('/user');
+    const { router } = renderApp('/user');
 
     expect(await screen.findByRole('heading', { name: '로그인' })).toBeInTheDocument();
     expect(useAuthStore.getState().accessToken).toBeNull();

@@ -90,3 +90,54 @@ describe('GET /api/task', () => {
     await expect(http('/api/task?page=1')).rejects.toMatchObject({ status: 401 });
   });
 });
+
+describe('GET/DELETE /api/task/:id', () => {
+  it('상세는 TaskDetailResponse 형상(registerDatetime 포함)으로 응답한다', async () => {
+    signInToStore();
+    const seed = seedTasks[0];
+    if (!seed) throw new Error('시드가 비어 있다');
+
+    const detail = await api(`/api/task/${seed.id}`);
+
+    expect(detail).toEqual({
+      title: seed.title,
+      memo: seed.memo,
+      registerDatetime: seed.registerDatetime,
+    });
+  });
+
+  it('존재하지 않는 id는 404다', async () => {
+    signInToStore();
+
+    await expect(api('/api/task/unknown-id')).rejects.toMatchObject({ status: 404 });
+    await expect(api('/api/task/unknown-id', { method: 'DELETE' })).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it('DELETE는 시드에서 제거하고, 목록·대시보드 집계에 반영된다', async () => {
+    signInToStore();
+    const target = seedTasks[3];
+    if (!target) throw new Error('시드가 비어 있다');
+    const before = seedTasks.length;
+
+    await expect(api(`/api/task/${target.id}`, { method: 'DELETE' })).resolves.toEqual({
+      success: true,
+    });
+
+    expect(seedTasks).toHaveLength(before - 1);
+    await expect(api(`/api/task/${target.id}`)).rejects.toMatchObject({ status: 404 });
+    const dashboard = await api<DashboardResponse>('/api/dashboard');
+    expect(dashboard.numOfTask).toBe(before - 1);
+
+    /* 시드는 모듈 상태라 다른 테스트 격리를 위해 원복한다 */
+    seedTasks.splice(3, 0, target);
+  });
+
+  it('미인증 요청은 401을 받는다', async () => {
+    await expect(http('/api/task/task-1')).rejects.toMatchObject({ status: 401 });
+    await expect(http('/api/task/task-1', { method: 'DELETE' })).rejects.toMatchObject({
+      status: 401,
+    });
+  });
+});

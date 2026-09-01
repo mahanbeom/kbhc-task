@@ -1,2 +1,2 @@
-export { taskListQuery } from './api';
-export type { TaskItem, TaskListResponse } from './model';
+export { deleteTask, taskDetailQuery, taskListQuery } from './api';
+export type { TaskDetailResponse, TaskItem, TaskListResponse } from './model';

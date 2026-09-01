@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { createRouter, type RouterHistory } from '@tanstack/react-router';
 
 import { routeTree } from '@/routeTree.gen';
@@ -7,9 +8,10 @@ import { useAuthStore } from '@/shared/auth/auth-store';
  * 가드(beforeLoad)는 다음 내비게이션에서만 실행되므로, 화면을 띄워둔 채
  * refresh가 실패해 스토어가 비워지는 경우는 여기서 스토어 전이를 구독해
  * 즉시 로그인으로 보낸다(SPEC 완료 기준: refresh 실패 시 로그인 이동). */
-export function createAppRouter(history?: RouterHistory) {
+export function createAppRouter(queryClient: QueryClient, history?: RouterHistory) {
   const router = createRouter({
     routeTree,
+    context: { queryClient },
     /* 기본(non-strict)은 validateSearch가 거른 값도 URL에 보존한다 — sign-in의
      * redirect 위생 검증이 실효를 가지려면 스키마 밖 파라미터를 제거해야 한다 */
     search: { strict: true },

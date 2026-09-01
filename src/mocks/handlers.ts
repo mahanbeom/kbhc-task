@@ -104,6 +104,31 @@ export const handlers = [
     return HttpResponse.json({ data, hasNext: start + TASK_PAGE_SIZE < seedTasks.length });
   }),
 
+  http.get('/api/task/:id', ({ request, params }) => {
+    const unauthorized = verifyBearer(request);
+    if (unauthorized) return unauthorized;
+    const task = seedTasks.find((item) => item.id === params.id);
+    if (!task) {
+      return HttpResponse.json({ errorMessage: '할 일을 찾을 수 없습니다.' }, { status: 404 });
+    }
+    return HttpResponse.json({
+      title: task.title,
+      memo: task.memo,
+      registerDatetime: task.registerDatetime,
+    });
+  }),
+
+  http.delete('/api/task/:id', ({ request, params }) => {
+    const unauthorized = verifyBearer(request);
+    if (unauthorized) return unauthorized;
+    const index = seedTasks.findIndex((item) => item.id === params.id);
+    if (index === -1) {
+      return HttpResponse.json({ errorMessage: '할 일을 찾을 수 없습니다.' }, { status: 404 });
+    }
+    seedTasks.splice(index, 1);
+    return HttpResponse.json({ success: true });
+  }),
+
   /* 저장해둔 숫자가 아니라 매 요청 시드 배열에서 집계 — 삭제(슬라이스 5) 후
    * 대시보드 쿼리 invalidate 시 줄어든 값이 그대로 반영되게 한다 */
   http.get('/api/dashboard', ({ request }) => {

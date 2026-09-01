@@ -9,14 +9,6 @@ import { ApiError } from '@/shared/api/http';
 
 import '@/app/styles/index.css';
 
-const router = createAppRouter();
-
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -29,6 +21,14 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const router = createAppRouter(queryClient);
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 /* 별도 서버가 없는 과제이므로 기본은 MSW mock 모드.
  * VITE_API_BASE_URL이 설정되면 실백엔드 모드로 간주해 MSW를 켜지 않는다. */
